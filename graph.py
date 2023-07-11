@@ -3,10 +3,8 @@
 # Graph visualization using force-directed drawing
 #
 
+import math
 import random
-import logging
-
-import numpy as np
 
 # prevent pygame from printing annoying message
 import contextlib
@@ -83,8 +81,8 @@ class ForceGraph:
 
             F = self.GRAVITY_CONST * r
 
-            fx = F * np.cos(angle)
-            fy = F * np.sin(angle)
+            fx = F * math.cos(angle)
+            fy = F * math.sin(angle)
 
             self.velocities[i][0] += fx
             self.velocities[i][1] += fy
@@ -99,8 +97,8 @@ class ForceGraph:
 
                 F = - self.REPEL_CONST / r**2
 
-                fx = F * np.cos(angle)
-                fy = F * np.sin(angle)
+                fx = F * math.cos(angle)
+                fy = F * math.sin(angle)
 
                 self.velocities[i][0] += fx
                 self.velocities[i][1] += fy
@@ -117,8 +115,8 @@ class ForceGraph:
 
                 F = self.ATTRACT_CONST * r
 
-                fx = F * np.cos(angle)
-                fy = F * np.sin(angle)
+                fx = F * math.cos(angle)
+                fy = F * math.sin(angle)
 
                 self.velocities[p1][0] += fx
                 self.velocities[p1][1] += fy
@@ -136,8 +134,8 @@ class ForceGraph:
         a = x2 - x1 # dx
         b = y2 - y1 # dy
 
-        distance = np.sqrt(a**2 + b**2)
-        angle = np.arctan2(b,a)
+        distance = math.sqrt(a**2 + b**2)
+        angle = math.atan2(b,a)
 
         return (distance, angle)
 
@@ -147,7 +145,7 @@ class ForceGraph:
         v = 0
 
         for x,y in self.velocities:
-            v += np.sqrt(x**2 + y**2)
+            v += math.sqrt(x**2 + y**2)
 
         return v
 
@@ -246,18 +244,18 @@ class GraphWindow:
         l = 8  # length from point to shaft
 
         # root of the arrowhead, ie. where it meets the shaft
-        prx = x1 + (dist - self.node_radius - l) * np.cos(angle)
-        pry = y1 + (dist - self.node_radius - l) * np.sin(angle)
+        prx = x1 + (dist - self.node_radius - l) * math.cos(angle)
+        pry = y1 + (dist - self.node_radius - l) * math.sin(angle)
 
         # point of the arrow
-        p1x = int(x1 + (dist - self.node_radius) * np.cos(angle))
-        p1y = int(y1 + (dist - self.node_radius) * np.sin(angle))
+        p1x = int(x1 + (dist - self.node_radius) * math.cos(angle))
+        p1y = int(y1 + (dist - self.node_radius) * math.sin(angle))
 
         # sides of the arrow
-        p2x = int(prx + w/2 * np.cos(angle + np.pi/2))
-        p2y = int(pry + w/2 * np.sin(angle + np.pi/2))
-        p3x = int(prx + w/2 * np.cos(angle - np.pi/2))
-        p3y = int(pry + w/2 * np.sin(angle - np.pi/2))
+        p2x = int(prx + w/2 * math.cos(angle + math.pi/2))
+        p2y = int(pry + w/2 * math.sin(angle + math.pi/2))
+        p3x = int(prx + w/2 * math.cos(angle - math.pi/2))
+        p3y = int(pry + w/2 * math.sin(angle - math.pi/2))
 
         self.draw_triangle(p1x, p1y, p2x, p2y, p3x, p3y)
 
