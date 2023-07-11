@@ -26,9 +26,11 @@ class ForceGraph:
     ATTRACT_CONST = 15
     GRAVITY_CONST = 2
 
-    def __init__(self, N, edges):
+    def __init__(self, N, edges, directed):
         self.N = N
         self.edges = edges
+
+        self.directed = directed
 
         self.positions = [[random.uniform(-2, 2), random.uniform(-2, 2)] for _ in range(self.N)]
         self.velocities = [[0.0, 0.0] for _ in range(self.N)]
@@ -157,10 +159,12 @@ class GraphWindow:
 
     WINDOW_SIZE = WINDOW_W, WINDOW_H = 800, 600
 
-    def __init__(self, N, edges, precompute_graph=False):
-        self.graph = ForceGraph(N, edges)
+    def __init__(self, N, edges, directed, precompute_graph=False):
+        self.graph = ForceGraph(N, edges, directed)
 
         self.draw_scale = 25
+        self.node_colors = [[255-i*8, i*8, 200] for i in range(N)]
+        self.node_radius = 16
 
         if precompute_graph:
             self.graph.compute_graph()
@@ -168,7 +172,6 @@ class GraphWindow:
         pg.init()
         self.screen = pg.display.set_mode(self.WINDOW_SIZE)
 
-        self.node_colors = [[255-i*8, i*8, 200] for i in range(N)]
 
         self.running = False
         self.paused = False
@@ -204,7 +207,7 @@ class GraphWindow:
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_g:
                 self.graph.gravity_enabled = not self.graph.gravity_enabled
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_r:
-                self.graph = ForceGraph(self.graph.N, self.graph.edges)
+                self.graph = ForceGraph(self.graph.N, self.graph.edges, self.graph.directed)
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_p:
                 self.paused = not self.paused
 
@@ -229,6 +232,36 @@ class GraphWindow:
 
             self.draw_edge(x1, y1, x2, y2)
 
+            if self.graph.directed:
+                self.draw_edge_direction(x1, y1, x2, y2)
+
+    def draw_edge_direction(self, x1, y1, x2, y2):
+        """
+        Draw a triangle representing the head of an arrow,
+        indicating the direction of the edge
+        """
+        dist, angle = self.graph.polar(x1,y1, x2, y2)
+
+        w = 8 # bottom width
+        l = 8  # length from point to shaft
+
+        # root of the arrowhead, ie. where it meets the shaft
+        prx = x1 + (dist - self.node_radius - l) * np.cos(angle)
+        pry = y1 + (dist - self.node_radius - l) * np.sin(angle)
+
+        # point of the arrow
+        p1x = int(x1 + (dist - self.node_radius) * np.cos(angle))
+        p1y = int(y1 + (dist - self.node_radius) * np.sin(angle))
+
+        # sides of the arrow
+        p2x = int(prx + w/2 * np.cos(angle + np.pi/2))
+        p2y = int(pry + w/2 * np.sin(angle + np.pi/2))
+        p3x = int(prx + w/2 * np.cos(angle - np.pi/2))
+        p3y = int(pry + w/2 * np.sin(angle - np.pi/2))
+
+        self.draw_triangle(p1x, p1y, p2x, p2y, p3x, p3y)
+
+
     def draw_graph_nodes(self):
         """
         Draw all the nodes of the graph
@@ -251,8 +284,8 @@ class GraphWindow:
         """
         Draw a single node at (x,y)
         """
-        self.draw_circle(x,y, 15)
-        self.draw_circle(x,y, 13, color=color)
+        self.draw_circle(x,y, self.node_radius)
+        self.draw_circle(x,y, self.node_radius-2, color=color)
 
     def draw_circle(self, x, y, r, color=[0,0,0]):
         """
@@ -261,6 +294,12 @@ class GraphWindow:
 
         gfxdraw.aacircle(self.screen, x, y, r, color)
         gfxdraw.filled_circle(self.screen, x, y, r, color)
+
+    def draw_triangle(self, x1, y1, x2, y2, x3, y3):
+        """
+        Draw a filled triangle with corners at (x1, y1), (x2, y2), (x3, y3)
+        """
+        gfxdraw.filled_trigon(self.screen, x1, y1,x2, y2,x3, y3, [0,0,0])
 
     def to_screen_position(self, pos):
         """
@@ -289,4 +328,4 @@ if __name__ == "__main__":
 
         edges.append((a,b))
 
-    GraphWindow(N, edges, False).loop()
+    GraphWindow(N, edges, True, False).loop()
