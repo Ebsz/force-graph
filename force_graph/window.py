@@ -17,9 +17,9 @@ class GraphWindow:
     keyboard inputs, as well as the simulation loop
     """
 
-    WINDOW_SIZE = WINDOW_W, WINDOW_H = 800, 600
+    DEFAULT_WINDOW_SIZE = DEFAULT_WINDOW_W, DEFAULT_WINDOW_H = 800, 600
 
-    def __init__(self, N, edges, directed=False, precompute_graph=False):
+    def __init__(self, N, edges, window_size=None, directed=False, precompute_graph=False):
         self.graph = ForceGraph(N, edges, directed)
 
         self.draw_scale = 25
@@ -29,13 +29,20 @@ class GraphWindow:
         if precompute_graph:
             self.graph.compute_graph()
 
+        if window_size:
+            self.window_size = window_size
+        else:
+            self.window_size = self.DEFAULT_WINDOW_SIZE
+
         pg.init()
-        self.screen = pg.display.set_mode(self.WINDOW_SIZE)
+        self.screen = None
 
         self.running = False
         self.paused = False
 
     def loop(self):
+        self.screen = pg.display.set_mode(self.window_size)
+
         now = pg.time.get_ticks()
         last = now
 
@@ -165,7 +172,7 @@ class GraphWindow:
         """
         x,y = pos
 
-        x = int(x * self.draw_scale + self.WINDOW_W //2)
-        y = int(-y * self.draw_scale + self.WINDOW_H //2)
+        x = int(x * self.draw_scale + self.window_size[0] //2)
+        y = int(-y * self.draw_scale + self.window_size[1] //2)
 
         return (x,y)
