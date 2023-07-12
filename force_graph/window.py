@@ -19,8 +19,8 @@ class GraphWindow:
 
     DEFAULT_WINDOW_SIZE = DEFAULT_WINDOW_W, DEFAULT_WINDOW_H = 800, 600
 
-    def __init__(self, N, edges, window_size=None, directed=False, precompute_graph=False):
-        self.graph = ForceGraph(N, edges, directed)
+    def __init__(self, N, edges, window_size=None, directed=False, precompute_graph=False, constants=None):
+        self.graph = ForceGraph(N, edges, directed=directed, constants=constants)
 
         self.draw_scale = 25
         self.node_colors = [[255-i*8, i*8, 200] for i in range(N)]
@@ -73,9 +73,14 @@ class GraphWindow:
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_g:
                 self.graph.gravity_enabled = not self.graph.gravity_enabled
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_r:
-                self.graph = ForceGraph(self.graph.N, self.graph.edges, self.graph.directed)
+                self.reset_simulation()
             elif event.type ==  pg.KEYDOWN and event.key == pg.K_p:
                 self.paused = not self.paused
+
+    def reset_simulation(self):
+        constants = (self.graph.repel_const,self.graph.attract_const,self.graph.gravity_const)
+
+        self.graph = ForceGraph(self.graph.N, self.graph.edges, self.graph.directed, constants=constants)
 
     def render(self):
         self.screen.fill([255, 255, 255])

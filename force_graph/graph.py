@@ -9,11 +9,11 @@ class ForceGraph:
     Creates a visualization of a graph by simulating interacting forces between nodes
     """
 
-    REPEL_CONST = 150
-    ATTRACT_CONST = 15
-    GRAVITY_CONST = 2
+    DEFAULT_REPEL_CONST = 150
+    DEFAULT_ATTRACT_CONST = 15
+    DEFAULT_GRAVITY_CONST = 2
 
-    def __init__(self, N, edges, directed=False):
+    def __init__(self, N, edges, directed=False, constants=None):
         self.N = N
         self.edges = edges
 
@@ -21,6 +21,13 @@ class ForceGraph:
 
         self.positions = [[random.uniform(-2, 2), random.uniform(-2, 2)] for _ in range(self.N)]
         self.velocities = [[0.0, 0.0] for _ in range(self.N)]
+
+        if constants:
+            self.repel_const, self.attract_const, self.gravity_const = constants
+        else:
+            self.repel_const = self.DEFAULT_REPEL_CONST
+            self.attract_const = self.DEFAULT_ATTRACT_CONST
+            self.gravity_const = self.DEFAULT_GRAVITY_CONST
 
         self.gravity_enabled = False
 
@@ -67,7 +74,7 @@ class ForceGraph:
 
             r, angle = self.polar(x1, y1, x2, y2)
 
-            F = self.GRAVITY_CONST * r
+            F = self.gravity_const * r
 
             fx = F * math.cos(angle)
             fy = F * math.sin(angle)
@@ -83,7 +90,7 @@ class ForceGraph:
 
                 r, angle = self.polar(x1, y1, x2, y2)
 
-                F = - self.REPEL_CONST / r**2
+                F = - self.repel_const / r**2
 
                 fx = F * math.cos(angle)
                 fy = F * math.sin(angle)
@@ -101,7 +108,7 @@ class ForceGraph:
 
                 r, angle = self.polar(x1, y1, x2, y2)
 
-                F = self.ATTRACT_CONST * r
+                F = self.attract_const * r
 
                 fx = F * math.cos(angle)
                 fy = F * math.sin(angle)
