@@ -13,8 +13,19 @@ with contextlib.redirect_stdout(None):
 
 class GraphWindow:
     """
-    GraphWindow represents the window that handles the actual displaying of the graph,
-    keyboard inputs, as well as the simulation loop
+    Creates and draws to the the graphical window that displays the graph,
+    captures keyboard inputs, and runs the simulation loop.
+
+    :param N:                   Number of nodes
+    :param edges:               List of tuples
+    :param window_size:         A tuple (width, height) specifying the
+                                size of the display window. Default: (800, 600)
+    :param directed:            If True, the graph will be drawn with arrows
+                                indicating the direction of the edges.
+                                Default: False
+    :param precompute_graph:    If True, the final graph will be computed
+                                before showing the window. Default: False
+    :param constants:           Custom simulation constants (see ForceGraph for details)
     """
 
     DEFAULT_WINDOW_SIZE = DEFAULT_WINDOW_W, DEFAULT_WINDOW_H = 800, 600

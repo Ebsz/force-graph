@@ -6,7 +6,20 @@ import random
 
 class ForceGraph:
     """
-    Creates a visualization of a graph by simulating interacting forces between nodes
+    Creates a visualization of a graph by simulating interacting forces between nodes.
+
+    The graph consists of nodes with positions [x, y], and edges (connections) between nodes.
+    Edges are represented by a 2-tuple, where (n1, n2) is an edge from node n1 to a second node n2
+
+    The graph lives in a standard 2-dimensional euclidean space, where points
+    in the space are represented by two coordinates x, y. Note that this is separate from window
+    coordinates, which means that drawing the graph requires converting from graph-space to screen-space.
+
+    :param N:           Number of nodes
+    :param edges:       List of tuples
+    :param directed:    True if the graph is directed, otherwise False
+    :param constants:   A tuple (REPEL, ATTRACT, GRAVITY) that specifies
+                        custom constants to use in the simulation.
     """
 
     DEFAULT_REPEL_CONST = 150
