@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-#
-# Graph visualization using force-directed drawing
-#
+# window.py
 
 import math
-import random
+
+from force_graph.graph import ForceGraph
 
 # prevent pygame from printing annoying message
 import contextlib
@@ -12,152 +10,16 @@ with contextlib.redirect_stdout(None):
     import pygame as pg
     from pygame import gfxdraw
 
-# number of nodes
-N = 20
-
-class ForceGraph:
-    """
-    Visualization of a graph by simulation of interacting forces between nodes
-    """
-
-    REPEL_CONST = 150
-    ATTRACT_CONST = 15
-    GRAVITY_CONST = 2
-
-    def __init__(self, N, edges, directed):
-        self.N = N
-        self.edges = edges
-
-        self.directed = directed
-
-        self.positions = [[random.uniform(-2, 2), random.uniform(-2, 2)] for _ in range(self.N)]
-        self.velocities = [[0.0, 0.0] for _ in range(self.N)]
-
-        self.gravity_enabled = False
-
-    def compute_graph(self):
-        """
-        Computes the final graph by running the simulation until we reach an equilibrium, ie.
-        when the sum of forces in the system is close to zero
-        """
-        n = 0
-
-        while True:
-            self.update(0.005)
-
-            v = self.total_velocity
-
-            if v < 0.1:
-                break
-            n+=1
-
-    def update(self, dt):
-        # velocity decay
-        for i in range(self.N):
-            self.velocities[i][0] *= 0.99 * dt
-            self.velocities[i][1] *= 0.99 * dt
-
-        self.add_forces()
-
-        # update node positions by its velocity
-        for i in range(self.N):
-            self.positions[i][0] += self.velocities[i][0] * dt
-            self.positions[i][1] += self.velocities[i][1] * dt
-
-
-    def add_forces(self):
-        self.add_repel_forces()
-        self.add_attraction_forces()
-
-        if self.gravity_enabled:
-            self.add_gravitational_forces()
-
-    def add_gravitational_forces(self):
-        for i in range(self.N):
-            x1, y1 = self.positions[i]
-            x2, y2 = [0, 0]
-
-            r, angle = self.polar(x1, y1, x2, y2)
-
-            F = self.GRAVITY_CONST * r
-
-            fx = F * math.cos(angle)
-            fy = F * math.sin(angle)
-
-            self.velocities[i][0] += fx
-            self.velocities[i][1] += fy
-
-    def add_repel_forces(self):
-        for i in range(self.N):
-            for j in range(i+1, self.N):
-                x1, y1 = self.positions[i]
-                x2, y2 = self.positions[j]
-
-                r, angle = self.polar(x1, y1, x2, y2)
-
-                F = - self.REPEL_CONST / r**2
-
-                fx = F * math.cos(angle)
-                fy = F * math.sin(angle)
-
-                self.velocities[i][0] += fx
-                self.velocities[i][1] += fy
-
-                self.velocities[j][0] += -fx
-                self.velocities[j][1] += -fy
-
-    def add_attraction_forces(self):
-        for (p1, p2) in self.edges:
-                x1, y1 = self.positions[p1]
-                x2, y2 = self.positions[p2]
-
-                r, angle = self.polar(x1, y1, x2, y2)
-
-                F = self.ATTRACT_CONST * r
-
-                fx = F * math.cos(angle)
-                fy = F * math.sin(angle)
-
-                self.velocities[p1][0] += fx
-                self.velocities[p1][1] += fy
-
-                self.velocities[p2][0] += -fx
-                self.velocities[p2][1] += -fy
-
-    @staticmethod
-    def polar(x1, y1, x2, y2):
-        """
-        Get the polar coordinates to (x2, y2), relative to (x1, y1)
-
-        Returns coordinates as a tuple of (distance, radians)
-        """
-        a = x2 - x1 # dx
-        b = y2 - y1 # dy
-
-        distance = math.sqrt(a**2 + b**2)
-        angle = math.atan2(b,a)
-
-        return (distance, angle)
-
-
-    @property
-    def total_velocity(self):
-        v = 0
-
-        for x,y in self.velocities:
-            v += math.sqrt(x**2 + y**2)
-
-        return v
-
 
 class GraphWindow:
     """
-    Handles the actual displaying of the graph
+    GraphWindow represents the window that handles the actual displaying of the graph,
+    keyboard inputs, as well as the simulation loop
     """
 
     WINDOW_SIZE = WINDOW_W, WINDOW_H = 800, 600
 
-    def __init__(self, N, edges, directed, precompute_graph=False):
+    def __init__(self, N, edges, directed=False, precompute_graph=False):
         self.graph = ForceGraph(N, edges, directed)
 
         self.draw_scale = 25
@@ -169,7 +31,6 @@ class GraphWindow:
 
         pg.init()
         self.screen = pg.display.set_mode(self.WINDOW_SIZE)
-
 
         self.running = False
         self.paused = False
@@ -240,7 +101,7 @@ class GraphWindow:
         """
         dist, angle = self.graph.polar(x1,y1, x2, y2)
 
-        w = 8 # bottom width
+        w = 8  # bottom width
         l = 8  # length from point to shaft
 
         # root of the arrowhead, ie. where it meets the shaft
@@ -258,7 +119,6 @@ class GraphWindow:
         p3y = int(pry + w/2 * math.sin(angle - math.pi/2))
 
         self.draw_triangle(p1x, p1y, p2x, p2y, p3x, p3y)
-
 
     def draw_graph_nodes(self):
         """
@@ -309,21 +169,3 @@ class GraphWindow:
         y = int(-y * self.draw_scale + self.WINDOW_H //2)
 
         return (x,y)
-
-
-if __name__ == "__main__":
-    # cycle graph
-    edges = [(n, n+1) for n in range(N-1)]
-    edges.append((N-1, 0))
-
-    # random edges
-    for _ in range(N//3):
-        a = random.randint(0, N-1)
-        b = random.randint(0, N-1)
-
-        while b == a:
-            b = random.randint(0, N-1)
-
-        edges.append((a,b))
-
-    GraphWindow(N, edges, True, False).loop()
